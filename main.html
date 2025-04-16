@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>도라이엄마 테스트</title>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+      }
+      .container {
+        max-width: 480px;
+        margin: 40px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .question {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+      }
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 10px;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .btn:hover {
+        background-color: #f0f0f0;
+      }
+      .result-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .result-desc {
+        font-size: 1rem;
+        color: #555;
+        margin-bottom: 20px;
+      }
+      .progress {
+        height: 8px;
+        background: #eee;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 20px;
+      }
+      .progress-bar {
+        height: 100%;
+        background: #4f46e5;
+        transition: width 0.3s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" id="app"></div>
+
+    <script>
+      const questions = [
+        {
+          question: "요즘 자주 드는 생각은?",
+          options: [
+            "이래도 되는 걸까?",
+            "내가 잘하고 있는 걸까?",
+            "뭐 어때~ 되겠지~",
+          ],
+        },
+        {
+          question: "아이에게 소리 지른 후 나는?",
+          options: [
+            "자책하고 후회한다",
+            "다음엔 다르게 해보자고 다짐한다",
+            "그럴 수도 있지~ 털어낸다",
+          ],
+        },
+        {
+          question: "다른 엄마들과 비교하면 나는?",
+          options: [
+            "항상 부족하게 느껴진다",
+            "비슷한 것 같다",
+            "나는 좀 유쾌한 축이다",
+          ],
+        },
+        {
+          question: "육아 정보는 주로 어디서 얻나요?",
+          options: ["전문서적, 전문가 조언", "카페, 블로그", "감으로 간다!"],
+        },
+        {
+          question: "하루에 나만을 위한 시간은?",
+          options: ["0시간", "1~2시간", "충분히 챙긴다"],
+        },
+        {
+          question: "육아하면서 가장 중요한 건?",
+          options: [
+            "정확한 지식과 계획",
+            "유연함과 감정 조절",
+            "재미와 긍정적인 분위기",
+          ],
+        },
+      ];
+
+      const results = [
+        {
+          title: "당신은 '완벽주의 육아러'!",
+          description:
+            "늘 긴장하고, 잘하고 싶고, 아이에게 최선을 다하고 싶은 마음이 큰 당신. 때론 너무 애쓰고 있는 건 아닌지, 당신 마음부터 돌봐주세요.",
+        },
+        {
+          title: "당신은 '균형잡힌 육아러'!",
+          description:
+            "노력도 하고, 고민도 하지만 적당히 내려놓을 줄 아는 당신! 아이와 함께하는 시간도, 당신 자신도 잘 챙기고 있어요. 앞으로도 이대로만~",
+        },
+        {
+          title: "당신은 '도라이엄마' 후보!",
+          description:
+            "눈치 보지 않고 나답게! 아이와 함께 구르고 뒹굴며 유쾌하게 살아가는 당신, 이미 도라이엄마입니다. 더 마음 놓고 웃어도 괜찮아요.",
+        },
+      ];
+
+      let step = 0;
+      let answers = [];
+
+      function render() {
+        const app = document.getElementById("app");
+        app.innerHTML = "";
+
+        if (step >= questions.length) {
+          const avg = answers.reduce((a, b) => a + b, 0) / answers.length;
+          const result =
+            avg < 0.8 ? results[0] : avg < 1.6 ? results[1] : results[2];
+
+          app.innerHTML = `
+          <div class="result-title">${result.title}</div>
+          <div class="result-desc">${result.description}</div>
+          <button class="btn" onclick="restart()">다시 하기</button>
+        `;
+          return;
+        }
+
+        const question = questions[step];
+        const progress = ((step / questions.length) * 100).toFixed(1);
+
+        app.innerHTML += `<div class="progress"><div class="progress-bar" style="width: ${progress}%"></div></div>`;
+        app.innerHTML += `<div class="question">Q${step + 1}. ${
+          question.question
+        }</div>`;
+
+        question.options.forEach((opt, i) => {
+          const btn = document.createElement("button");
+          btn.className = "btn";
+          btn.innerText = opt;
+          btn.onclick = () => handleAnswer(i);
+          app.appendChild(btn);
+        });
+      }
+
+      function handleAnswer(index) {
+        answers.push(index);
+        step++;
+        render();
+      }
+
+      function restart() {
+        step = 0;
+        answers = [];
+        render();
+      }
+
+      render();
+    </script>
+  </body>
+</html>
