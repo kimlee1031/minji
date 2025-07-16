@@ -1,252 +1,167 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>도라이엄마 자가진단 테스트</title>
-    <style>
-      body {
-        font-family: "Segoe UI", sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f9f9f9;
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>육아 유형 자가진단 테스트</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    :root {
+      --bg: #fffaf6;
+      --primary: #dcc39c;
+      --hover: #a97f3b;
+      --progress-bg: #ffe6f0;
+      --text-main: #3f3f46;
+      --text-sub: #78716c;
+      --gray-hover: #e0e0e0;
+      --gray-border: #cccccc;
+    }
+    body { margin:0; padding:0; font-family:"SUIT","Noto Sans KR",sans-serif; background-color:var(--bg); color:var(--text-main); }
+    .container {
+      max-width:600px;
+      margin:40px auto;
+      padding:24px;
+      background:#fff;
+      border-radius:16px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.05);
+      text-align:center;
+    }
+    .intro-sub { color:var(--text-sub); font-size:0.9rem; margin-bottom:4px; }
+    .intro-title { font-size:1.5rem; font-weight:700; color:var(--primary); margin-bottom:16px; }
+    .progress { height:4px; background:var(--progress-bg); border-radius:2px; overflow:hidden; margin-bottom:20px; }
+    .progress-bar { height:100%; background:var(--primary); transition:width 0.3s; }
+    .question { text-align:left; font-size:1.2rem; font-weight:600; margin-bottom:20px; }
+    .answers { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-bottom:20px; }
+    .btn { width:100%; padding:14px; background-color:var(--primary); color:#fff; border:none; border-radius:12px; font-size:1rem; cursor:pointer; transition:background 0.2s,transform 0.2s; margin-bottom:16px; }
+    .btn:hover { background-color:var(--hover); transform:scale(1.03); }
+    .restart-btn, .back-btn {
+      width:100%; margin-top:16px; background:transparent; color:var(--text-sub);
+      border:2px dashed var(--text-sub); border-radius:12px; padding:14px; cursor:pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .restart-btn:hover, .back-btn:hover {
+      background-color: var(--gray-hover);
+      border-color: var(--gray-border);
+      color: var(--text-main);
+    }
+    .btn-group { display:flex; flex-direction:column; gap:12px; margin-top:16px; }
+    .result-title { font-size:1.5rem; font-weight:bold; color:var(--primary); margin-bottom:10px; }
+    .result-desc { text-align:left; font-size:1rem; color:var(--text-sub); margin-bottom:20px; text-indent:1em; line-height:1.6; }
+    .result-img { width:60%; margin:0 auto 20px; display:block; border-radius:12px; box-shadow:0 4px 8px rgba(0,0,0,0.08); }
+    @media(max-width:500px){ .answers{ grid-template-columns:1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container" id="app"></div>
+  <script>
+    const questions = [
+      { question:"아이가 화장실 변기 물에 인형을 담그고 있다. 나는?", options:[
+        "'어떻게 이럴 수가!' 기겁하며 말린다.",
+        "조용히 치운다.",
+        "\"어이쿠! 우리 인형 푹 젖어서 춥겠다~\" 아이의 눈높이에서 달랜다.",
+        "\"인형이 욕조가 필요했나 보구나~\" 아이와 함께 논다."
+      ]},
+      { question:"아이가 갑자기 '엄마, 우린 외계인이었으면 좋겠어'라고 말한다. 나는?", options:[
+        "그런 말 하지 마.",
+        "왜 그런 생각을 했어?",
+        "그럼 외계인 놀이하자!",
+        "지금도 외계인일걸? 나도 오늘 아침에 텔레파시 받았어."
+      ]},
+      { question:"오늘 하루 육아를 한 줄로 요약하자면?", options:[
+        "하얗게 불태웠다….",
+        "오늘 일이 어제 일 같고 어제 일이 오늘 일 같다.",
+        "우리… 이대로 괜찮은 걸까?",
+        "블록버스터 한 편 나오겠네!"
+      ]},
+      { question:"아이가 벽지에 그림을 그렸다. 나는?", options:[
+        "말린다 + 혼낸다.",
+        "사진 찍는다.",
+        "\"작품 제목 뭐야?\" 아이에게 묻는다.",
+        "\"나도 같이 그려도 돼?\" 아이와 함께 벽화를 완성한다."
+      ]},
+      { question:"아이가 내 방을 어지럽혔다. 나는?", options:[
+        "화내며 혼낸다.",
+        "이유를 물어본다.",
+        "\"어머! 우리 집에 내가 모르는 도깨비가 사나 봐.\" 농담을 건넨다.",
+        "\"엄마 심심할까 봐 그러는 거지?\" 방 어지르기 놀이를 한다."
+      ]},
+      { question:"아이가 '내일 학교 안 가도 돼?'라고 묻는다. 나는?", options:[
+        "\"안 돼, 착한 어린이는 학교 가야지.\"",
+        "\"학교 가기 싫어? 혹시 무슨 일 있어?\"",
+        "\"엄마도 내일 일 안 해도 돼?\"",
+        "\"그럼 우리 뭐하고 놀까?\""
+      ]},
+      { question:"아이가 채소를 다 싫어한다. 나는?", options:[
+        "\"채소를 잘 먹어야 잘 크지.\"",
+        "아이가 거부감 없이 먹을 수 있는 맛있는 채소 요리를 연구한다.",
+        "‘채소 잘 먹기’ 퀘스트를 개발한다.",
+        "\"옛날 옛날에, 채소를 무진장 싫어하던 한 아이가 있었는데…\""
+      ]},
+      { question:"아이가 '몇 살 때 결혼할 거야?'라고 묻는다. 나는?", options:[
+        "\"엄마는 이미 아빠랑 결혼했는데?\"",
+        "\"혹시 결혼하고 싶은 사람 생겼어?\"",
+        "아이와 결혼과 사랑에 대해 토론한다.",
+        "\"결혼이 뭐야? 먹는 건가?\""
+      ]},
+      { question:"겨울에 여름 옷 입겠다는 아이. 나는?", options:[
+        "\"그거 입으면 감기 걸려!\"",
+        "\"왜? 혹시 어디 열나?\"",
+        "\"그래, 이한치한이다!\"",
+        "\"그럼 우리 이참에 수영이나 갈까?\" 수영복을 같이 꺼내 입는다."
+      ]}
+    ];
+    const results = [
+      { title:"진성 '나뽕희' 엄마", description:"당신은 이미 '나뽕희 여사'의 숨겨진 자매! 육아를 '생존'이 아니라 '예술'로 승화시키는 능력자입니다. 세상이 정한 '완벽한 엄마상'이 있다고요? 아니, 우리는 우리만의 길을 간다! 이 책은 당신의 가장 친한 친구가 되어줄 거예요."},
+      { title:"잠재적 '나뽕희' 엄마", description:"어? 보인다 보여… 당신 안에 숨어 있는 '나뽕희' 기질! 여기서 한끗만 더 풀어지면 육아의 신세계가 열릴지도 몰라요. 그게 어떤 건지 궁금하시다고요? 자자 그럼, 벨트 매시고~ 나뽕희 세계관 속으로 출발~"},
+      { title:"하루하루가 살얼음판! 완벽주의 엄마", description:"‘잘해야 해’라는 마음속 목소리에 늘 긴장하고 있나요? 나뽕희 여사의 ‘힘 빼는 철학’이 지금 가장 필요한 분입니다. 이 책을 펼치면, 아슬아슬하게만 느껴졌던 발 딛는 자리가 조금 더 부드럽게 느껴졌던 발 딛는 자리가 조금 더 부드럽게 느껴질지도 몰라요."},
+      { title:"호기심 가득 관찰자 엄마", description:"한 번쯤은 평소와 다른 무언가를 해 보고 싶었던 적, 혹시 있나요? 그게 바로 오늘이 될지도 몰라요! 나뽕희 여사와 함께라면 통쾌한 해방구가 열릴지도요."}
+    ];
+    let step=-1, answers=[];
+    function render(){
+      const app=document.getElementById('app'); app.innerHTML='';
+      if(step===-1){
+        app.innerHTML=`
+          <div class="intro-sub">믿거나 말거나 😊</div>
+          <div class="intro-title">육아 유형 자가진단 테스트</div>
+          <img src="http://www.goraein.com/image01.png" style="width:100%; border-radius:12px; margin:20px 0;">
+          <button class="btn" onclick="startTest()">테스트 시작하기</button>
+        `;
+        return;
       }
-      .container {
-        max-width: 480px;
-        margin: 40px auto;
-        padding: 20px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        text-align: center;
+      if(step>=questions.length){
+        const avg=answers.reduce((a,b)=>a+b,0)/answers.length;
+        const res=avg<0.8?results[2]:avg<1.6?results[3]:avg<2.4?results[1]:results[0];
+        app.innerHTML=`
+          <div class="result-title">${res.title}</div>
+          <div class="result-desc">${res.description}</div>
+          <img src="http://www.goraein.com/250425_이렇게키워도사람되나요_표지.jpg" class="result-img">
+          <div class="btn-group">
+            <button class="btn" onclick="window.open('https://www.wadiz.kr/web/campaign/detail/361907','_blank')">📚 책 보러 가기</button>
+            <button class="btn" onclick="restart()">🔁 다시 하기</button>
+            <button class="btn" onclick="shareLink()">📤 공유하기</button>
+          </div>
+        `;
+        return;
       }
-      .question {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 20px;
-      }
-      .btn {
-        display: block;
-        width: 100%;
-        padding: 12px;
-        margin-bottom: 10px;
-        background: white;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background 0.2s;
-      }
-      .btn:hover {
-        background-color: #f0f0f0;
-      }
-      .result-title {
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin-bottom: 10px;
-      }
-      .result-desc {
-        font-size: 1rem;
-        color: #555;
-        margin-bottom: 20px;
-      }
-      .progress {
-        height: 8px;
-        background: #eee;
-        border-radius: 4px;
-        overflow: hidden;
-        margin-bottom: 20px;
-      }
-      .progress-bar {
-        height: 100%;
-        background: #ec4899;
-        transition: width 0.3s;
-      }
-      .result-img {
-        max-width: 100%;
-        border-radius: 8px;
-        margin-bottom: 20px;
-      }
-      .btn-group {
-        display: flex;
-        gap: 10px;
-        justify-content: center;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container" id="app"></div>
-
-    <script>
-      const questions = [
-        {
-          question: "아이가 화장실 변기 물에 인형을 담그고 있다. 나는?",
-          options: [
-            "기겁하며 말린다: '어떻게 이럴 수가!'",
-            "조용히 치운다: '이건 뭐지?'",
-            "'이제 얘는 욕조가 필요했나 보다~' 하며 구경한다",
-            "'야 너도 들어가 볼래?' 하며 장난을 건다",
-          ],
-        },
-        {
-          question:
-            "아이가 갑자기 '엄마, 우린 외계인이었으면 좋겠어'라고 말한다. 나는?",
-          options: [
-            "그런 말 하지 마",
-            "왜 그런 생각을 했어?",
-            "그럼 오늘부터 외계인 놀이하자!",
-            "지금도 외계인일걸? 나도 오늘 아침에 텔레파시 받았어",
-          ],
-        },
-        {
-          question: "오늘 하루 육아를 한 줄로 요약하자면?",
-          options: [
-            "지옥",
-            "반복",
-            "약간 미친 하루",
-            "흥미진진 대환장 블록버스터",
-          ],
-        },
-        {
-          question: "아이가 반창고로 벽지를 도배한다면?",
-          options: [
-            "말린다 + 혼낸다",
-            "사진 찍는다",
-            "'작품 제목 뭐야?' 묻는다",
-            "'나도 도와줄게' 함께 붙인다",
-          ],
-        },
-        {
-          question: "아이가 내 방을 뒤집어 놓고 다닌다. 나는?",
-          options: [
-            "화내며 혼낸다",
-            "귀찮아서 그냥 방치한다",
-            "'이걸 정리하면 나도 뭐 하나 사줄게!'",
-            "'이렇게 하면 오히려 더 깔끔해질 수도 있어'",
-          ],
-        },
-        {
-          question: "아이가 '내일 학교 안 가도 돼?'라고 묻는다. 나는?",
-          options: [
-            "왜 그런 말을 해? 학교 가야지!",
-            "학교 가기 싫어? 그럼 뭐 하고 싶어?",
-            "나도 한 번 학교 빠지고 싶다…",
-            "학교가 싫으면 이게 더 낫지, 카페에서 일하자!“",
-          ],
-        },
-        {
-          question: "아이가 채소를 다 싫어한다. 나는?",
-          options: [
-            "채소 먹어야 잘 커!",
-            "오늘은 간식만 먹자!",
-            "이걸 어떻게든 좋아하게 만들어야지",
-            "그럼 나도 채소 안 먹을게, 우리 둘 다 피자 먹자!“",
-          ],
-        },
-        {
-          question: "아이가 '몇 살 때 결혼할 거야?'라고 묻는다. 나는?",
-          options: [
-            "결혼? 그건 너무 일찍 생각하는 거야",
-            "너 결혼하고 싶은 사람이 있어?",
-            "엄마는 결혼 안 해도 돼!",
-            "결혼 안 해도 되는 세상에서 살면 좋겠어.",
-          ],
-        },
-        {
-          question: "겨울에 여름 옷 입겠다는 아이. 나는?",
-          options: [
-            "그거 입으면 감기 걸려!",
-            "그래, 여름이 좋지!",
-            "그냥 입고 나가도 괜찮을 거야",
-            "나도 그렇게 입고 나가도 돼?“",
-          ],
-        },
-      ];
-
-      const results = [
-        {
-          title: "진성 도라이 엄마",
-          description:
-            "당신은 이미 ‘나뽕희 여사’의 숨겨진 자매! 육아를 ‘생존’이 아니라 ‘예술’로 승화시키는 능력자입니다. 세상이 정한 엄마상 따위, 당신 앞에선 무력하죠. 이 책은 당신의 인생 바이블이 될지도 몰라요!",
-        },
-        {
-          title: "잠재적 도라이 엄마",
-          description:
-            "당신 안에는 지금도 유쾌한 도라이 기질이 꿈틀대고 있어요. 한 끗만 더 풀어지면 세상 제일 웃긴 육아가 시작됩니다. 나뽕희 여사의 세계관 슬쩍 엿보고 싶지 않나요?",
-        },
-        {
-          title: "고생길 위의 완벽주의 엄마",
-          description:
-            "아… 힘드시죠. ‘잘해야 해’라는 말에 늘 긴장하고 있나요? 나뽕희 여사의 ‘힘 빼는 철학’이 지금 가장 필요한 분입니다. 책 한 권으로도, 어쩌면 조금은 웃을 수 있을 거예요.",
-        },
-        {
-          title: "호기심 가득 관찰자 엄마",
-          description:
-            "나도 저렇게 살아보고 싶다… 하지만 아직은 두려워요? 괜찮아요. 누구나 한 번쯤 도라이 엄마가 되어도 좋아요. 나뽕희 여사와 함께, 웃음으로 연습해 볼까요?",
-        },
-      ];
-
-      let step = 0;
-      let answers = [];
-
-      function render() {
-        const app = document.getElementById("app");
-        app.innerHTML = "";
-
-        if (step >= questions.length) {
-          const avg = answers.reduce((a, b) => a + b, 0) / answers.length;
-          const result =
-            avg < 0.8
-              ? results[2]
-              : avg < 1.6
-              ? results[3]
-              : avg < 2.4
-              ? results[1]
-              : results[0];
-
-          app.innerHTML = `
-            <div class="result-title">${result.title}</div>
-            <div class="result-desc">${result.description}</div>
-            <img src="/image/img_detail.png" alt="책 이미지" class="result-img" />
-            <div class="btn-group">
-              <button class="btn" onclick="restart()">다시 하기</button>
-              <a href="https://www.yes24.com/product/search?domain=ALL&query=%25EA%25B3%25A0%25EB%259E%2598%25EB%25B1%2583%25EC%2586%258D&mkEntrNo=288793" target="_blank">
-                <button class="btn">책 보러 가기</button>
-              </a>
-            </div>
-          `;
-          return;
-        }
-
-        const question = questions[step];
-        const progress = ((step / questions.length) * 100).toFixed(1);
-
-        app.innerHTML += `<div class="progress"><div class="progress-bar" style="width: ${progress}%"></div></div>`;
-        app.innerHTML += `<div class="question">Q${step + 1}. ${
-          question.question
-        }</div>`;
-
-        question.options.forEach((opt, i) => {
-          const btn = document.createElement("button");
-          btn.className = "btn";
-          btn.innerText = opt;
-          btn.onclick = () => handleAnswer(i);
-          app.appendChild(btn);
-        });
-      }
-
-      function handleAnswer(index) {
-        answers.push(index);
-        step++;
-        render();
-      }
-
-      function restart() {
-        step = 0;
-        answers = [];
-        render();
-      }
-
-      render();
-    </script>
-  </body>
+      const q=questions[step];
+      const pct=((step/questions.length)*100).toFixed(1);
+      app.innerHTML+=`<div class="progress"><div class="progress-bar" style="width:${pct}%;"></div></div>`;
+      app.innerHTML+=`<div class="question">Q${step+1}. ${q.question}</div>`;
+      app.innerHTML+=`<div class="answers">`;
+      q.options.forEach((opt,i)=>{app.innerHTML+=`<button class="btn" onclick="handleAnswer(${i})">${opt}</button>`;});
+      app.innerHTML+=`</div>`;
+      app.innerHTML+=`<button class="btn restart-btn" onclick="restart()">처음부터 다시</button>`;
+      app.innerHTML+=`<button class="btn back-btn" onclick="goBack()">이전으로</button>`;
+      gsap.from('.question',{y:-30,duration:0.5,ease:'power2.out'});
+      gsap.from('.answers .btn',{y:30,duration:0.5,ease:'power2.out',stagger:0.1});
+      gsap.from('.restart-btn, .back-btn',{opacity:0,duration:0.5,delay:0.3,stagger:0.1});
+    }
+    function handleAnswer(i){answers.push(i);step++;render();}
+    function startTest(){step=0;answers=[];render();}
+    function restart(){step=-1;answers=[];render();}
+    function goBack(){if(step>0){answers.pop();step--;render();}else restart();}
+    function shareLink(){const url='http://www.goraein.com/test.html';if(navigator.share){navigator.share({title:'육아 유형 자가진단 테스트',text:'나의 나뽕희 지수를 확인해보세요!',url});}else prompt('공유할 링크를 복사하세요:',url);}document.addEventListener('DOMContentLoaded',render);
+  </script>
+</body>
 </html>
